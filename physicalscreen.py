@@ -31,7 +31,10 @@ class PhysicalScreen:
 
     def _transform_virtual_point_to_physical(self, point):
         # Move screen to reside only on X>0,Y>0 quarter (since now screen center is at origin)
-        point[0] += virtualscreen.SCREEN_WIDTH / 2.
+        try:
+            point[0] += virtualscreen.SCREEN_WIDTH / 2.
+        except:
+            import pdb; pdb.set_trace()
         point[1] += virtualscreen.SCREEN_HEIGHT / 2.
         point[2] = 0
 

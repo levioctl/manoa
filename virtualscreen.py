@@ -15,7 +15,6 @@ class VirtualScreen:
         self._polygons = None
         self._normalized_world = normalized_world.NormalizedWorld(observer)
         self._normalized_observer_position = self._normalized_world.project_point(observer.position)
-        self._normalized_observer_direction = self._normalized_world.project_point(observer.position)
         self._visible_zone_bound_planes = self._generate_boundary_walls_planes()
 
     def start_new_frame(self):
@@ -25,30 +24,52 @@ class VirtualScreen:
         _object = copy.copy(_object)
 
         if isinstance(_object, segment.Segment):
+
             _object.vertices = [self._normalized_world.project_point(point) for point in _object.vertices]
+            debug = False
 
-
-            visible_points = [point for point in _object.vertices if point[2] >= 0]
-            if len(visible_points) == 0:
+            #points_in_front_of_screen = [point for point in _object.vertices if point[2] >= 0]
+            points_in_front_of_screen = [point for point in _object.vertices if point[2] >= 0]
+            if len(points_in_front_of_screen) == 0:
                 pass
 
             else:
+                visible_points = [point for point in _object.vertices if self._is_point_visible(point)]
                 if len(visible_points) == 2:
-                    _object.vertices = [self._get_point_projection(point) for point in _object.vertices]
+                    stuff = [self._get_point_projection(point) for point in _object.vertices]
+                    _object.vertices = stuff
                     self._polygons.append(_object)
-                if len(visible_points) == 1:
-                    visible_point = visible_points[0]
-                    non_visible_point = [point for point in _object.vertices if point is not visible_point][0]
-                    visible_projection = self._get_visible_projection_of_non_visible_point(non_visible_point,
-                                                                                        connecting_visible_point=visible_point)
+                elif not visible_points and len([point for point in _object.vertices if point[2] < 0]) == 2:
+                    if debug:
+                        print("no visible points")
+                else:
+                    add_polygon = True
+                    non_visible = [point for point in _object.vertices if not [_point for _point in visible_points if _point is point]]
+                    assert len(non_visible) in (1, 2)
+                    for non_visible_point in non_visible:
+                        #visible_point = visible_points[0]
+                        other_point = [point for point in _object.vertices if point is not non_visible_point][0]
+                        visible_projection = self._get_visible_projection_of_non_visible_point(non_visible_point,
+                                                                                               connecting_point=other_point,
+                                                                                               debug=debug)
 
-                    if visible_projection is not None:
-                        non_visible_point[0] = visible_projection[0]
-                        non_visible_point[1] = visible_projection[1]
-                        non_visible_point[2] = visible_projection[2]
+                        if visible_projection is None or "None" in str(visible_projection):
+                            add_polygon = False
+                            if debug:
+                                print("visible projection is none")
+                            break
+                        else:
+                            non_visible_point[0] = visible_projection[0]
+                            non_visible_point[1] = visible_projection[1]
+                            non_visible_point[2] = visible_projection[2]
 
+                    if add_polygon:
                         _object.vertices = [self._get_point_projection(point) for point in _object.vertices]
-                        self._polygons.append(_object)
+                        if any(point is None or not point.shape for point in _object.vertices):
+                            if debug:
+                                print("not adding polygin, some are none")
+                        else:
+                            self._polygons.append(_object)
 
         elif isinstance(_object, polygon.Polygon):
             for _segment in _object.segments:
@@ -64,9 +85,7 @@ class VirtualScreen:
         return self._polygons
 
     def _get_point_projection(self, point):
-        screen_center = self._normalized_observer_position + self._normalized_observer_direction
-        _plane = plane.Plane(normal=self._normalized_observer_direction,
-                             some_point_on_plane=screen_center)
+        _plane = plane.Plane(normal=np.array((0, 0, 1)), some_point_on_plane=np.array((0, 0, 0)))
         _line = line.Line(point_a=point, point_b=self._normalized_observer_position)
         return utils.get_plane_and_line_intersection(_plane, _line)
 
@@ -84,24 +103,51 @@ class VirtualScreen:
 
     def _generate_boundary_walls_planes(self):
         # Create screen bound points
-        topright = np.array((SCREEN_WIDTH / 2., SCREEN_HEIGHT / 2., 0))
-        topleft = np.array((-SCREEN_WIDTH / 2., SCREEN_HEIGHT / 2., 0))
-        bottomright = np.array((SCREEN_WIDTH / 2., -SCREEN_HEIGHT / 2., 0))
-        bottomleft = np.array((-SCREEN_WIDTH / 2., -SCREEN_HEIGHT / 2., 0))
+        topright = np.array((SCREEN_WIDTH / 2., SCREEN_HEIGHT / 2., 0.))
+        topleft = np.array((-SCREEN_WIDTH / 2., SCREEN_HEIGHT / 2., 0.))
+        bottomright = np.array((SCREEN_WIDTH / 2., -SCREEN_HEIGHT / 2., 0.))
+        bottomleft = np.array((-SCREEN_WIDTH / 2., -SCREEN_HEIGHT / 2., 0.))
 
         top = plane.create_from_three_points(self._normalized_observer_position, topleft, topright)
         bottom = plane.create_from_three_points(self._normalized_observer_position, bottomleft, bottomright)
         left = plane.create_from_three_points(self._normalized_observer_position, topleft, bottomleft)
         right = plane.create_from_three_points(self._normalized_observer_position, topright, bottomright)
+        screen = plane.Plane(normal=np.array((0, 0, 1)), some_point_on_plane=np.array((0, 0, 0)))
 
-        return [top, bottom, left, right]
+        return [top, bottom, left, right, screen]
 
-    def _get_visible_projection_of_non_visible_point(self, non_visible_point, connecting_visible_point):
-        connecting_segment = segment.Segment(non_visible_point, connecting_visible_point)
+    def _get_visible_projection_of_non_visible_point(self, invisible_point, connecting_point, debug=False):
+        connecting_segment = segment.Segment(invisible_point, connecting_point)
 
-        for _plane in self._visible_zone_bound_planes:
+        original_point = np.array(invisible_point)
+
+        min_distance = None
+        result = None
+
+        result_idx = None
+        for plane_idx, _plane in enumerate(self._visible_zone_bound_planes):
             intersection_point = utils.get_plane_and_segment_intersection(_plane, connecting_segment)
-            if intersection_point is not None:
-                return intersection_point
+            if intersection_point is not None and "None" not in str(intersection_point):
+                #if self._is_point_visible(intersection_point):
+                if debug:
+                    #import pdb; pdb.set_trace()
+                    pass
+                condition = False
+                if plane_idx == 4:
+                    # screen
+                    condition = intersection_point[1] >= -SCREEN_HEIGHT / 2. -0.00001 and intersection_point[1] <= SCREEN_HEIGHT / 2 + 0.00001
+                else:
+                    condition = intersection_point[2] >= -0.001
+                if condition:
+                    distance_from_inbisible = np.linalg.norm(original_point - intersection_point)
+                    if result is None or distance_from_inbisible < min_distance:
+                        min_distance = distance_from_inbisible
+                        result = intersection_point
+                        result_idx = plane_idx
 
-        return None
+        if debug:
+            print("\tline from invisible point {} to connecting point {} intersects with plane {} at point {}".format(invisible_point,
+                                                                                                          connecting_point,
+                                                                                                          result_idx,
+                                                                                                          result))
+        return result

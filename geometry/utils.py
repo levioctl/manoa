@@ -29,3 +29,7 @@ def get_plane_and_segment_intersection(_plane, _segment):
         return None
 
     return _segment.vertices[0] + (_segment.vertices[1] - _segment.vertices[0]) * coeff_vec
+
+
+def normalized(vector):
+    return vector / np.linalg.norm(vector)

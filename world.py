@@ -8,30 +8,27 @@ class World:
         self.objects = list()
 
 
-        #line = segment.Segment(np.array((5., -3., 0.)), np.array((5., 4., 0.)))
-        #line.color = 'blue'
-        #self.objects.append(line)
+        if True:
+            #line = segment.Segment(np.array((5., -3., 0.)), np.array((5., 4., 0.)))
+            #line.color = 'blue'
+            #self.objects.append(line)
 
-        limit = 8.
-        for y in range(-int(limit), int(limit)):
-            y = float(y)
+            limit = 10
+            #nr_lines = 5
+            for line_nr in range(-10, 11, 1):
 
-            if np.abs(y) < 0.001:
-                color = 'yellow'
-            else:
-                color = 'white'
+                line = segment.Segment(np.array((-limit, line_nr, 0.)), np.array((limit, line_nr, 0.)), color='white', name="gridy_{}".format(line_nr))
+                self.objects.append(line)
 
-            line = segment.Segment(np.array((-limit, y, 0.)), np.array((limit, y, 0.)), color)
-            self.objects.append(line)
-
-            line = segment.Segment(np.array((y, -limit, 0.)), np.array((y, limit, 0.)), color)
-            self.objects.append(line)
+                line = segment.Segment(np.array((line_nr, -limit, 0.)), np.array((line_nr, limit, 0.)), color='yellow')
+                self.objects.append(line)
 
         self.rec1 = polygon.Polygon(np.array((4., -2., 1.)),
                                np.array((4., -1., 1.)),
                                np.array((4., -1., 0.)),
                                np.array((4., -2., 0.)),
-                               color='red')
+                               color='red',
+                               name='redsq')
         self.rec1.color = 'red'
         self.objects.append(self.rec1)
 
@@ -51,8 +48,34 @@ class World:
         self.rec3.color = 'green'
         self.objects.append(self.rec3)
 
-        self.z_axis = segment.Segment(np.array((0., 0., -100.)), np.array((0., 0., 100.)))
-        self.objects.append(self.z_axis)
+        squares = [polygon.Polygon(np.array((-1., -1., 0.)),
+                                   np.array((-1., 1., 0.)),
+                                   np.array((1., 1., 0.)),
+                                   np.array((1., -1., 0.)),
+                                   color='green'),
+                   polygon.Polygon(np.array((-1., -1., 1.)),
+                                   np.array((-1., 1., 1.)),
+                                   np.array((1., 1., 1.)),
+                                   np.array((1., -1., 1.)),
+                                   color='green'),
+                   segment.Segment(np.array((-1., -1., +1.)),
+                                   np.array((-1., -1., 0.)),
+                                   color="green"),
+                   segment.Segment(np.array((-1., +1., 1.)),
+                                   np.array((-1., +1., 0.)),
+                                   color="green"),
+                   segment.Segment(np.array((+1., -1., +1.)),
+                                   np.array((+1., -1., 0.)),
+                                   color="green"),
+                   segment.Segment(np.array((+1., +1., +1.)),
+                                   np.array((+1., +1., 0.)),
+                                   color="green")
+                   ]
+        for square in squares:
+            self.objects.append(square)
+
+        self.x_axis = segment.Segment(np.array((-100., 0., -0.)), np.array((100., 0., 0.)), name="x_axis")
+        #self.objects.append(self.x_axis)
 
     def update(self):
         return
