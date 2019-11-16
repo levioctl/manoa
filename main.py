@@ -9,7 +9,7 @@ from gi.repository import Gtk, GdkX11, Gdk
 from gi.repository import GLib
 
 import engine
-from geometry import utils, segment, rotation
+from geometry import utils, segment, rotation, polygon
 
 
 KEYCODE_A = 38
@@ -62,18 +62,36 @@ class Screen(Gtk.Window):
 
         try:
             # Draw
-            polygons = self._engine.render_next_frame_polygons()
-            for polygon in polygons:
-                if isinstance(polygon, segment.Segment):
-                    vertices = polygon.vertices
+            objects = self._engine.render_next_frame_polygons()
+            for _object in objects:
+                if isinstance(_object, segment.Segment):
+                    vertices = _object.vertices
                     self._draw_line(ctx,
                                     vertices[0][0],
                                     vertices[0][1],
                                     vertices[1][0],
                                     vertices[1][1],
-                                    polygon.color)
+                                    _object.color)
+                elif isinstance(_object, polygon.Polygon):
+                    #for _segment in _object.segments:
+                    #    self._draw_line(ctx,
+                    #                    _segment.vertices[0][0], _segment.vertices[0][1],
+                    #                    _segment.vertices[1][0], _segment.vertices[1][1],
+                    #                    _object.color,
+                    #                    preserve=True)
+                    seg = _object.segments
+                    #self._draw_quad(ctx, _object.color,
+                    #                v[0].vertices[0][0], v[0].vertices[0][1],
+                    #                v[1].vertices[0][0], v[1].vertices[0][1],
+                    #                v[2].vertices[0][0], v[2].vertices[0][1], 
+                    #                v[3].vertices[0][0], v[3].vertices[0][1])
+                    self._draw_quad(ctx, _object.color,
+                                    seg)
+                    ctx.move_to(seg[0].vertices[0][0], seg[0].vertices[0][1])
+                    ctx.close_path()
+                    ctx.fill()
                 else:
-                    assert False
+                    assert False, type(_object)
 
             # To be moved to some 'Game' class or something
             self._engine.world.update()
@@ -86,6 +104,27 @@ class Screen(Gtk.Window):
             ctx.set_source_rgba(255, 255, 255, 1)
             ctx.show_text("Position: {}; Direction: {}".format(self._engine._observer.position,
                                                                self._engine._observer.direction))
+
+            def draw_polygon(x0, y0,x1,y1,x2,y2,x3,y3):
+                ctx.move_to(x0,y0)
+                ctx.line_to(x1,y1)
+                ctx.stroke_preserve()
+
+                #ctx.move_to(x1,y1)
+                ctx.line_to(x2,y2)
+                ctx.stroke_preserve()
+
+                #ctx.move_to(x2,y2)
+                ctx.line_to(x3,y3)
+                ctx.stroke_preserve()
+
+                #ctx.move_to(x3,y3)
+                ctx.line_to(x0,y0)
+                #ctx.close_path()
+                ctx.stroke_preserve()
+
+                ctx.fill()
+            draw_polygon(100, 100, 200, 100, 200, 200, 100, 200)
         except:
             import traceback
             import sys;
@@ -103,7 +142,7 @@ class Screen(Gtk.Window):
         edge_y = person_position_y - self._engine._observer.direction[1] * 40.
         self._draw_line(ctx, person_position_x, person_position_y, edge_x, edge_y, "blue")
 
-    def _draw_line(self, ctx, x0, y0, x1, y1, color):
+    def _color_name_to_rgb(self, color):
         if color == "red":
             color = (255, 0, 0)
         elif color == "green":
@@ -116,24 +155,50 @@ class Screen(Gtk.Window):
             color = (255, 255, 0)
         else:
             assert False, color
-        ctx.move_to(x0, y0)
-        #ctx.set_font_size(14)
-        #ctx.show_text("(%.2f, %.2f)" % (x0 - 10, y0 - 10))
-        #ctx.move_to(x0, y0)
-        ctx.line_to(x1, y1)
-        ctx.set_source_rgba(color[0], color[1], color[2], 1)
-        ctx.stroke()
-        #ctx.move_to(x1, y1)
-        #ctx.show_text("(%.2f, %.2f)" % (x1, y1))
-        #ctx.move_to(x0, y0)
+        return color
 
-    def _draw_quad(self, ctx, color, x0, y0, x1, y1, x2, y2, x3, y3):
-        self._draw_line(ctx, x0, y0, x1, y1, color)
-        self._draw_line(ctx, x1, y1, x2, y2, color)
-        self._draw_line(ctx, x2, y2, x3, y3, color)
-        self._draw_line(ctx, x3, y3, x0, y0, color)
-        #ctxr.arc(x, y, 2, 0, 2 * pi)
-        #ctx.fill()
+    def _draw_line(self, ctx, x0, y0, x1, y1, color, preserve=False):
+        self.set_color(ctx, color)
+        ctx.move_to(x0, y0)
+        ctx.line_to(x1, y1)
+        ctx.stroke()
+
+    def set_color(self, ctx, name):
+        color = self._color_name_to_rgb(name)
+        ctx.set_source_rgba(color[0], color[1], color[2], 1)
+
+    def _draw_quad(self, ctx, color, segments):
+        self.set_color(ctx, color)
+
+        ctx.move_to(segments[0].vertices[0][0], segments[0].vertices[0][1])
+
+        ctx.line_to(segments[0].vertices[1][0], segments[0].vertices[1][1])
+        ctx.stroke_preserve()
+
+        ctx.line_to(segments[1].vertices[0][0], segments[1].vertices[0][1])
+        ctx.stroke_preserve()
+
+        ctx.line_to(segments[1].vertices[1][0], segments[1].vertices[1][1])
+        ctx.stroke_preserve()
+
+        ctx.line_to(segments[2].vertices[0][0], segments[2].vertices[0][1])
+        ctx.stroke_preserve()
+
+        ctx.line_to(segments[2].vertices[1][0], segments[2].vertices[1][1])
+        ctx.stroke_preserve()
+
+        ctx.line_to(segments[3].vertices[0][0], segments[3].vertices[0][1])
+        ctx.stroke_preserve()
+
+        ctx.line_to(segments[3].vertices[1][0], segments[3].vertices[1][1])
+        ctx.stroke_preserve()
+
+        ctx.line_to(segments[0].vertices[0][0], segments[0].vertices[0][1])
+        ctx.stroke_preserve()
+
+        #ctx.set_source_rgba(color[0], color[1], color[2], 1)
+        ctx.close_path()
+        ctx.fill()
 
     def _keypress_callback(self, *args):
         keycode = args[1].get_keycode()[1]

@@ -21,6 +21,11 @@ class VirtualScreen:
         self._polygons = list()
 
     def project_object(self, _object):
+        _object = self._get_projected_object(_object)
+        if _object is not None:
+            self._polygons.append(_object)
+
+    def _get_projected_object(self, _object):
         _object = copy.copy(_object)
 
         if isinstance(_object, segment.Segment):
@@ -38,11 +43,17 @@ class VirtualScreen:
                 if len(visible_points) == 2:
                     stuff = [self._get_point_projection(point) for point in _object.vertices]
                     _object.vertices = stuff
-                    self._polygons.append(_object)
+                    return _object
                 elif not visible_points and len([point for point in _object.vertices if point[2] < 0]) == 2:
                     if debug:
                         print("no visible points")
                 else:
+                    #_object.vertices = [self._get_point_projection(point) for point in _object.vertices]
+                    #if any(point is None or not point.shape for point in _object.vertices):
+                    #    return None
+                    #else:
+                    #    return _object
+
                     add_polygon = True
                     non_visible = [point for point in _object.vertices if not [_point for _point in visible_points if _point is point]]
                     assert len(non_visible) in (1, 2)
@@ -69,11 +80,16 @@ class VirtualScreen:
                             if debug:
                                 print("not adding polygin, some are none")
                         else:
-                            self._polygons.append(_object)
+                            return _object
 
         elif isinstance(_object, polygon.Polygon):
-            for _segment in _object.segments:
-                self.project_object(_segment)
+            _object = copy.copy(_object)
+            _object.segments = [self._get_projected_object(_segment)
+                                for _segment in _object.segments]
+            if all(_segment is not None for _segment in _object.segments):
+                return _object
+
+        return None
             #are_some_points_visible = any([self._is_point_visible(point) for point in _object.vertices])
             #if True or are_some_points_visible:
             #    projected_points = [self._get_point_projection(point) for point in _object.vertices]
