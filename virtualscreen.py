@@ -86,7 +86,7 @@ class VirtualScreen:
             _object = copy.copy(_object)
             _object.segments = [self._get_projected_object(_segment)
                                 for _segment in _object.segments]
-            if all(_segment is not None for _segment in _object.segments):
+            if _object.segments.count(None) <= 1:
                 return _object
 
         return None

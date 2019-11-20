@@ -169,11 +169,12 @@ class Screen(Gtk.Window):
         ctx.line_to(segments[1].vertices[1][0], segments[1].vertices[1][1])
         ctx.stroke_preserve()
 
-        ctx.line_to(segments[2].vertices[0][0], segments[2].vertices[0][1])
-        ctx.stroke_preserve()
+        if len(segments) == 3:
+            ctx.line_to(segments[2].vertices[0][0], segments[2].vertices[0][1])
+            ctx.stroke_preserve()
 
-        ctx.line_to(segments[2].vertices[1][0], segments[2].vertices[1][1])
-        ctx.stroke_preserve()
+            ctx.line_to(segments[2].vertices[1][0], segments[2].vertices[1][1])
+            ctx.stroke_preserve()
 
         ctx.line_to(segments[0].vertices[0][0], segments[0].vertices[0][1])
         ctx.stroke_preserve()

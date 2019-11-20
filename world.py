@@ -29,12 +29,14 @@ class World:
                                color='red',
                                name='redsq')
         self.tri1.color = 'red'
+        self.objects.append(self.tri1)
 
         self.tri2 = polygon.Polygon(np.array((5., -2., 1.)),
                                np.array((5., -1., 0.)),
                                np.array((5., -2., 0.)),
                                color='blue')
         self.tri2.color = 'blue'
+        self.objects.append(self.tri2)
 
         self.tri3 = polygon.Polygon(np.array((6., -2., 1.)),
                                np.array((6., -1., 0.)),
@@ -42,8 +44,6 @@ class World:
                                color='green')
         self.tri3.color = 'green'
         self.objects.append(self.tri3)
-        self.objects.append(self.tri2)
-        self.objects.append(self.tri1)
 
         squares = [#polygon.Polygon(np.array((-1., -1., 0.)),
                    #                np.array((-1., 1., 0.)),

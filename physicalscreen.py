@@ -31,7 +31,8 @@ class PhysicalScreen:
             physical_object = self._get_physical_segment_from_virtual(virtual_object)
         else:
             physical_object.segments = [self._get_physical_segment_from_virtual(_segment)
-                                        for _segment in virtual_object.segments]
+                                        for _segment in virtual_object.segments
+                                        if _segment is not None]
         return physical_object
 
     def _get_physical_segment_from_virtual(self, _segment):
