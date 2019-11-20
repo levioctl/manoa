@@ -9,12 +9,7 @@ class World:
 
 
         if True:
-            #line = segment.Segment(np.array((5., -3., 0.)), np.array((5., 4., 0.)))
-            #line.color = 'blue'
-            #self.objects.append(line)
-
             limit = 10
-            #nr_lines = 5
             for line_nr in range(-10, 11, 1):
 
                 line = segment.Segment(np.array((-limit, line_nr, 0.)), np.array((limit, line_nr, 0.)), color='white', name="gridy_{}".format(line_nr))

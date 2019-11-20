@@ -83,36 +83,12 @@ class Screen(Gtk.Window):
 
             # To be moved to some 'Game' class or something
             self._engine.world.update()
-            #self._engine._observer.position[0] += 0.01
-            #self._engine._observer.direction = rotation.rotate(self._engine._observer.direction, axis_vector=np.array([0,0,1]),
-            #                                                   theta=-.5 * np.pi / 180.)
 
             ctx.move_to(20, 30)
             ctx.set_font_size(20)
             ctx.set_source_rgba(255, 255, 255, 1)
             ctx.show_text("Position: {}; Direction: {}".format(self._engine._observer.position,
                                                                self._engine._observer.direction))
-
-            def draw_polygon(x0, y0,x1,y1,x2,y2,x3,y3):
-                ctx.move_to(x0,y0)
-                ctx.line_to(x1,y1)
-                ctx.stroke_preserve()
-
-                #ctx.move_to(x1,y1)
-                ctx.line_to(x2,y2)
-                ctx.stroke_preserve()
-
-                #ctx.move_to(x2,y2)
-                ctx.line_to(x3,y3)
-                ctx.stroke_preserve()
-
-                #ctx.move_to(x3,y3)
-                ctx.line_to(x0,y0)
-                #ctx.close_path()
-                ctx.stroke_preserve()
-
-                ctx.fill()
-            draw_polygon(100, 100, 200, 100, 200, 200, 100, 200)
         except:
             import traceback
             import sys;
@@ -179,7 +155,6 @@ class Screen(Gtk.Window):
         ctx.line_to(segments[0].vertices[0][0], segments[0].vertices[0][1])
         ctx.stroke_preserve()
 
-        #ctx.set_source_rgba(color[0], color[1], color[2], 1)
         ctx.close_path()
         ctx.fill()
 

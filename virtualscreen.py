@@ -31,9 +31,7 @@ class VirtualScreen:
         if isinstance(_object, segment.Segment):
 
             _object.vertices = [self._normalized_world.project_point(point) for point in _object.vertices]
-            debug = False
 
-            #points_in_front_of_screen = [point for point in _object.vertices if point[2] >= 0]
             points_in_front_of_screen = [point for point in _object.vertices if point[2] >= 0]
             if len(points_in_front_of_screen) == 0:
                 pass
@@ -45,29 +43,18 @@ class VirtualScreen:
                     _object.vertices = stuff
                     return _object
                 elif not visible_points and len([point for point in _object.vertices if point[2] < 0]) == 2:
-                    if debug:
-                        print("no visible points")
+                    pass
                 else:
-                    #_object.vertices = [self._get_point_projection(point) for point in _object.vertices]
-                    #if any(point is None or not point.shape for point in _object.vertices):
-                    #    return None
-                    #else:
-                    #    return _object
-
                     add_polygon = True
                     non_visible = [point for point in _object.vertices if not [_point for _point in visible_points if _point is point]]
                     assert len(non_visible) in (1, 2)
                     for non_visible_point in non_visible:
-                        #visible_point = visible_points[0]
                         other_point = [point for point in _object.vertices if point is not non_visible_point][0]
                         visible_projection = self._get_visible_projection_of_non_visible_point(non_visible_point,
-                                                                                               connecting_point=other_point,
-                                                                                               debug=debug)
+                                                                                               connecting_point=other_point)
 
                         if visible_projection is None or "None" in str(visible_projection):
                             add_polygon = False
-                            if debug:
-                                print("visible projection is none")
                             break
                         else:
                             non_visible_point[0] = visible_projection[0]
@@ -90,12 +77,6 @@ class VirtualScreen:
                 return _object
 
         return None
-            #are_some_points_visible = any([self._is_point_visible(point) for point in _object.vertices])
-            #if True or are_some_points_visible:
-            #    projected_points = [self._get_point_projection(point) for point in _object.vertices]
-            #    if projected_points:
-            #        _object.vertices = projected_points
-            #        self._polygons.append(_object)
 
     def get_polygons(self):
         return self._polygons
@@ -144,9 +125,7 @@ class VirtualScreen:
         for plane_idx, _plane in enumerate(self._visible_zone_bound_planes):
             intersection_point = utils.get_plane_and_segment_intersection(_plane, connecting_segment)
             if intersection_point is not None and "None" not in str(intersection_point):
-                #if self._is_point_visible(intersection_point):
                 if debug:
-                    #import pdb; pdb.set_trace()
                     pass
                 condition = False
                 if plane_idx == 4:

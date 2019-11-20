@@ -57,5 +57,4 @@ class PhysicalScreen:
         # Invert Y axis since in the physical screen, Y grows downwards
         point[1] = self._height - point[1]
 
-
         return point
