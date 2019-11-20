@@ -23,41 +23,38 @@ class World:
                 line = segment.Segment(np.array((line_nr, -limit, 0.)), np.array((line_nr, limit, 0.)), color='yellow')
                 self.objects.append(line)
 
-        self.rec1 = polygon.Polygon(np.array((4., -2., 1.)),
-                               np.array((4., -1., 1.)),
+        self.tri1 = polygon.Polygon(np.array((4., -2., 1.)),
                                np.array((4., -1., 0.)),
                                np.array((4., -2., 0.)),
                                color='red',
                                name='redsq')
-        self.rec1.color = 'red'
-        self.objects.append(self.rec1)
+        self.tri1.color = 'red'
 
-        self.rec2 = polygon.Polygon(np.array((5., -2., 1.)),
-                               np.array((5., -1., 1.)),
+        self.tri2 = polygon.Polygon(np.array((5., -2., 1.)),
                                np.array((5., -1., 0.)),
                                np.array((5., -2., 0.)),
                                color='blue')
-        self.rec2.color = 'blue'
-        self.objects.append(self.rec2)
+        self.tri2.color = 'blue'
 
-        self.rec3 = polygon.Polygon(np.array((6., -2., 1.)),
-                               np.array((6., -1., 1.)),
+        self.tri3 = polygon.Polygon(np.array((6., -2., 1.)),
                                np.array((6., -1., 0.)),
                                np.array((6., -2., 0.)),
                                color='green')
-        self.rec3.color = 'green'
-        self.objects.append(self.rec3)
+        self.tri3.color = 'green'
+        self.objects.append(self.tri3)
+        self.objects.append(self.tri2)
+        self.objects.append(self.tri1)
 
-        squares = [polygon.Polygon(np.array((-1., -1., 0.)),
-                                   np.array((-1., 1., 0.)),
-                                   np.array((1., 1., 0.)),
-                                   np.array((1., -1., 0.)),
-                                   color='green'),
-                   polygon.Polygon(np.array((-1., -1., 1.)),
-                                   np.array((-1., 1., 1.)),
-                                   np.array((1., 1., 1.)),
-                                   np.array((1., -1., 1.)),
-                                   color='green'),
+        squares = [#polygon.Polygon(np.array((-1., -1., 0.)),
+                   #                np.array((-1., 1., 0.)),
+                   #                np.array((1., 1., 0.)),
+                   #                np.array((1., -1., 0.)),
+                   #                color='green'),
+                   #polygon.Polygon(np.array((-1., -1., 1.)),
+                   #                np.array((-1., 1., 1.)),
+                   #                np.array((1., 1., 1.)),
+                   #                np.array((1., -1., 1.)),
+                   #                color='green'),
                    segment.Segment(np.array((-1., -1., +1.)),
                                    np.array((-1., -1., 0.)),
                                    color="green"),
@@ -75,7 +72,6 @@ class World:
             self.objects.append(square)
 
         self.x_axis = segment.Segment(np.array((-100., 0., -0.)), np.array((100., 0., 0.)), name="x_axis")
-        #self.objects.append(self.x_axis)
 
     def update(self):
         return

@@ -73,20 +73,8 @@ class Screen(Gtk.Window):
                                     vertices[1][1],
                                     _object.color)
                 elif isinstance(_object, polygon.Polygon):
-                    #for _segment in _object.segments:
-                    #    self._draw_line(ctx,
-                    #                    _segment.vertices[0][0], _segment.vertices[0][1],
-                    #                    _segment.vertices[1][0], _segment.vertices[1][1],
-                    #                    _object.color,
-                    #                    preserve=True)
                     seg = _object.segments
-                    #self._draw_quad(ctx, _object.color,
-                    #                v[0].vertices[0][0], v[0].vertices[0][1],
-                    #                v[1].vertices[0][0], v[1].vertices[0][1],
-                    #                v[2].vertices[0][0], v[2].vertices[0][1], 
-                    #                v[3].vertices[0][0], v[3].vertices[0][1])
-                    self._draw_quad(ctx, _object.color,
-                                    seg)
+                    self._draw_quad(ctx, _object.color, seg)
                     ctx.move_to(seg[0].vertices[0][0], seg[0].vertices[0][1])
                     ctx.close_path()
                     ctx.fill()
@@ -185,12 +173,6 @@ class Screen(Gtk.Window):
         ctx.stroke_preserve()
 
         ctx.line_to(segments[2].vertices[1][0], segments[2].vertices[1][1])
-        ctx.stroke_preserve()
-
-        ctx.line_to(segments[3].vertices[0][0], segments[3].vertices[0][1])
-        ctx.stroke_preserve()
-
-        ctx.line_to(segments[3].vertices[1][0], segments[3].vertices[1][1])
         ctx.stroke_preserve()
 
         ctx.line_to(segments[0].vertices[0][0], segments[0].vertices[0][1])
